@@ -23,7 +23,6 @@ class ChatClientConfig(
         val memoryAdvisor = MessageChatMemoryAdvisor.builder(messageWindowChatMemory)
             .build()
         return chatClientBuilder
-            .defaultSystem("You are my assistant, my name is Slava, he is russian programmer, like astronomy and his job, give me always short answer and call me by name!")
             .defaultAdvisors(SimpleLoggerAdvisor(), memoryAdvisor)
             .build()
     }
