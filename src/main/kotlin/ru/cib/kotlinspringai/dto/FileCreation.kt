@@ -1,6 +1,5 @@
 package ru.cib.kotlinspringai.dto
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.serialization.Serializable
 
 @Serializable

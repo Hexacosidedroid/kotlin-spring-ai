@@ -1,0 +1,22 @@
+<students>
+  <student>
+    <name>Emily Johnson</name>
+    <hobbies>photography, painting</hobbies>
+  </student>
+  <student>
+    <name>Michael Chen</name>
+    <hobbies>gaming, cooking</hobbies>
+  </student>
+  <student>
+    <name>Sophia Patel</name>
+    <hobbies>reading, hiking</hobbies>
+  </student>
+  <student>
+    <name>James Wilson</name>
+    <hobbies>music, coding</hobbies>
+  </student>
+  <student>
+    <name>Ava Taylor</name>
+    <hobbies>dancing, traveling</hobbies>
+  </student>
+</students>
