@@ -3,17 +3,17 @@ package ru.cib.kotlinspringai.controller
 import jakarta.servlet.http.HttpSession
 import kotlinx.serialization.json.Json
 import org.springframework.ai.chat.client.ChatClient
-import org.springframework.ai.chat.client.ResponseEntity
 import org.springframework.ai.chat.memory.ChatMemory
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.RestTemplate
 import ru.cib.kotlinspringai.dto.FileCreation
+import ru.cib.kotlinspringai.dto.SearchDuckDuckGo
 import java.io.File
-import java.util.UUID
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import ru.cib.kotlinspringai.config.ToolConfig
 
 @RestController
 class ChatController(
@@ -26,10 +26,10 @@ class ChatController(
         return chatCreate("/Users/slava_ivanov_saikyo/kotlin-spring-ai", request, session.id)
     }
 
-//    @GetMapping("/search={request}")
-//    fun search(@PathVariable request: String, session: HttpSession): String? {
-//        return chatSearch()
-//    }
+    @GetMapping("/search={request}")
+    fun search(@PathVariable request: String, session: HttpSession): String? {
+        return chatSearch(request, session.id)
+    }
 
     @GetMapping("/ask={question}")
     fun ask(@PathVariable question: String, session: HttpSession): String? {
@@ -124,6 +124,7 @@ class ChatController(
                 You: "Use pdb, Slava. Quick and efficient for your projects."
             """.trimIndent())
             .user(question)
+            .tools(ToolConfig())
             .advisors {
                 it.param(ChatMemory.CONVERSATION_ID, conversationId)
             }
@@ -134,7 +135,41 @@ class ChatController(
             ?.replace("\n", "")
     }
 
-    fun chatSearch(request: String, conversationId: String) {
-//        restTemplate.getForEntity<>()
+    fun chatSearch(request: String, conversationId: String): String? {
+        val url = "https://api.duckduckgo.com/?q=$request&format=json&no_redirect=1&no_html=1"
+        val rawResponse = restTemplate.getForObject(url, String::class.java)
+        val mapper = jacksonObjectMapper()
+        val searchResponse = mapper.readValue<SearchDuckDuckGo>(rawResponse!!)
+        val requestPrompt = """
+            You have access to DuckDuckGo Instant Answer data for the user's query.
+            Query: $request
+            Abstract: ${if (!searchResponse.abstractText.isNullOrEmpty()) searchResponse.abstractText else "No result"}
+            Definition: ${if (!searchResponse.definition.isNullOrEmpty()) searchResponse.definition else "No result"}
+            Direct answer: ${if (!searchResponse.answer.isNullOrEmpty()) searchResponse.answer else "No result"}
+            Related topics (raw data from request): ${searchResponse.relatedTopics}
+        """.trimIndent()
+        val systemPrompt = """
+            You are an AI assistant that must answer the user's question using the web search
+            results provided below from DuckDuckGo Instant Answer API.
+
+            Use the search results as the primary source of truth. If something is not covered
+            by the results, you may rely on your general knowledge, but clearly indicate when
+            you are extrapolating beyond the given data.
+            
+            Give user links to search if have them in search data.
+
+            Web search data:
+            $requestPrompt
+        """.trimIndent()
+        val result = chatClient
+            .prompt()
+            .system(systemPrompt)
+            .user(request)
+            .advisors {
+                it.param(ChatMemory.CONVERSATION_ID, conversationId)
+            }
+            .call()
+            .content()
+        return result
     }
 }
