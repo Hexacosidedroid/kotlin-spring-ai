@@ -179,4 +179,19 @@ class ChatService(
             .content()
         return result
     }
+
+    fun chatSummaryRequest(request: String, listOfAnswers: String): String? {
+        val systemPrompt = """ 
+            Give me a summary from my request and response from llm
+            My first request: $request
+            Info from LLM: 
+        """.trimIndent()
+        val result = chatClient
+            .prompt()
+            .system(systemPrompt)
+            .user(listOfAnswers)
+            .call()
+            .content()
+        return result
+    }
 }

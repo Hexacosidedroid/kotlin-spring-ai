@@ -1,11 +1,9 @@
 package ru.cib.kotlinspringai.controller
 
 import jakarta.servlet.http.HttpSession
-import org.springframework.ai.chat.client.ChatClient
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.RestTemplate
 import ru.cib.kotlinspringai.service.ChatService
 
 @RestController
@@ -21,6 +19,6 @@ class AgentController(
         listOfItems?.forEach {
             listOfResult.add(chatService.chatSearch(it, null))
         }
-        return listOfResult.toString()
+        return chatService.chatSummaryRequest(request, listOfResult.toString())
     }
 }
