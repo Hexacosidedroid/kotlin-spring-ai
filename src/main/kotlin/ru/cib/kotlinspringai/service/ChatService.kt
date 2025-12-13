@@ -113,8 +113,8 @@ class ChatService(
             .call()
             .content()
         return result
-            ?.replace(Regex("<think>[\\s\\S]*?</think>"), "")
-            ?.replace("\n", "")
+//            ?.replace(Regex("<think>[\\s\\S]*?</think>"), "")
+//            ?.replace("\n", "")
     }
 
     fun chatSearch(request: String, conversationId: String?): String? {
