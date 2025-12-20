@@ -3,6 +3,7 @@ package ru.cib.kotlinspringai.service
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.memory.ChatMemory
 import org.springframework.ai.document.Document
+import org.springaicommunity.mcp.annotation.McpTool
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader
 import org.springframework.ai.transformer.splitter.TokenTextSplitter
 import org.springframework.ai.vectorstore.SearchRequest
@@ -25,6 +26,10 @@ class RagService(
         return tokenTextSplitter.apply(documents)
     }
 
+    @McpTool(
+        name = "loadToVectorDatabase",
+        description = "Loads a PDF document into the vector database for RAG (Retrieval Augmented Generation) search. The PDF is split into chunks and embedded for semantic search."
+    )
     fun loadToVectorDatabase(pdfPath: String = "classpath:tr_technology_radar_vol_32_en.pdf") {
         val documents = loadPdf(pdfPath)
         val cleanedDocuments = documents.map { document ->
@@ -40,6 +45,10 @@ class RagService(
         vectorStore.add(cleanedDocuments)
     }
 
+    @McpTool(
+        name = "searchVectorDatabase",
+        description = "Searches the vector database using semantic similarity and returns an AI-generated answer based on the retrieved context. This is the main RAG search functionality."
+    )
     fun searchVectorDatabase(
         query: String,
         topK: Int = 5,
